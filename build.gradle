@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+
+jar {
+    baseName = 'rest-service'
+    version =  '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-data-jpa")
+    compile("com.h2database:h2")
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.6.1'
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.6.1'
+    compile group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '0.23.0.RELEASE'
+    compile("org.springframework.boot:spring-boot-starter-hateoas")
+    compile("org.springframework.boot:spring-boot-starter-parent:1.2.6.RELEASE")
+    compile group: 'org.apache.camel', name: 'camel-rabbitmq', version: '2.12.0'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-amqp', version: '1.5.1.RELEASE'
+    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.9.13'
+    compile group: 'junit', name: 'junit', version: '4.4'
+
+}
