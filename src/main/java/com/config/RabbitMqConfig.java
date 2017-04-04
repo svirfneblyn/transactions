@@ -2,11 +2,13 @@ package com.config;
 
 
 import com.rabbitmq.listeners.Consumer;
+import com.rabbitmq.recive.Receiver;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -61,10 +63,11 @@ public class RabbitMqConfig {
         template.setMessageConverter(jsonMessageConverter());
         return template;
     }
-   /* @Bean
-    MessageListenerAdapter listenerAdapter(Receiver receiver) {
+ @Bean
+ MessageListenerAdapter listenerAdapter(Receiver receiver) {
         return new MessageListenerAdapter(receiver, "receiveMessage");
-    }*/
+    }
+
 }
 
 
