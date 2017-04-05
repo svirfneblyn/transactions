@@ -1,8 +1,6 @@
-package com.transactions.service;
+package com.jdbc;
 
-import com.jdbc.DBManager;
 import com.jdbc.service.LotteryTicketService;
-import org.jcp.xml.dsig.internal.SignerOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,14 +16,12 @@ public class GenerateTicketsServiceTest {
         dbm = new DBManager();
         ls = new LotteryTicketService(dbm);
         try {
+            ls.clearTable();
             ls.ticketsSaverToDB();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
-
-
     @Test
     public void runBuyers() {
         try {
@@ -35,7 +31,6 @@ public class GenerateTicketsServiceTest {
             e.printStackTrace();
         }
     }
-
     @Test
     public void showTicketOwners() {
         ls.showTicketOwners();
