@@ -16,17 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ByersEmulator {
     @Autowired
     private LotteryTicketRepository lotteryRepository;
-   /* @Autowired
-    private LotteryTicketService lotteryTicketService;*/
     private AtomicInteger count = new AtomicInteger();
     private ExecutorService byerPool = Executors.newFixedThreadPool(50);
     private String byerName = "Byer_";
     public void createBuyers() throws InterruptedException {
-// Collection<Callable<String>> tasks = new ArrayList<Callable<String>>();
         Collection<Callable<Boolean>> byerTasks = new ArrayList<Callable<Boolean>>();
         for (int i = 0; i <50 ; i++) {
             byerTasks.add(() -> {
-            //    lotteryTicketService.buy(byerName + count.incrementAndGet());
                 System.out.println("step + " + count.get());
                 return true;
             });

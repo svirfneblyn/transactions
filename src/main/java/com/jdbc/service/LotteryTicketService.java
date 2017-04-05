@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,32 +30,37 @@ public class LotteryTicketService {
     private AtomicInteger count = new AtomicInteger();
     private ExecutorService byerPool = Executors.newFixedThreadPool(50);
     private String byerName = "Byer_";
+    private ConcurrentHashMap<String, String> conrolMap = new ConcurrentHashMap<>();
 
     public LotteryTicketService(DBManager dbm) {
         this.dbm = dbm;
     }
 
 
-    public synchronized Boolean buy( String buyerId) throws SQLException {
-       Connection con = null;
+    public synchronized Boolean buy(String buyerId) throws SQLException {
+        Connection con = null;
         PreparedStatement pstmSelect = null;
         PreparedStatement pstmUpdate = null;
 
-        int id=0;
+        int id = 0;
+        String ticketId="_";
         try {
             con = dbm.openConnection();
-           con.setAutoCommit(false);
-           con.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            pstmSelect = con.prepareStatement("select id from lottery_tickets where buyer_id is null limit 1");
+            con.setAutoCommit(false);
+            con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            pstmSelect = con.prepareStatement("select id, ticket_number from lottery_tickets where buyer_id is null limit 1");
             pstmUpdate = con.prepareStatement("UPDATE lottery_tickets SET buyer_id = ? WHERE id = ?");
             ResultSet rs = pstmSelect.executeQuery();
             while (rs.next()) {
-               id  = rs.getInt(1);
+                id = rs.getInt(1);
+                ticketId=rs.getString(2);
+                System.out.println(ticketId);
             }
             pstmUpdate.setString(1, buyerId);
             pstmUpdate.setInt(2, id);
             pstmUpdate.executeUpdate();
-           con.commit();
+            addToMap(buyerId,ticketId);
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -65,18 +71,14 @@ public class LotteryTicketService {
                 pstmUpdate.close();
             }
             if (con != null) {
-               con.close();
+                con.close();
             }
-           /* dbm.getConectionPool().add(con);
-            logger.info("connection returned to the pool.. ");*/
         }
-
-
         return true;
     }
 
+    /*Генерация и сохраниение 10000тыс билетов в БД*/
     public void ticketsSaverToDB() throws SQLException {
-        List<LotteryTicket> ticketsList = new ArrayList<>();
         Connection con = dbm.openConnection();
         con.setAutoCommit(false);
         PreparedStatement pstm = con.prepareStatement("INSERT INTO lottery_tickets VALUES(?,?,?)");
@@ -90,29 +92,31 @@ public class LotteryTicketService {
         pstm.close();
         con.close();
     }
-
-
+public void addToMap(String byerId,String ticketId){
+    conrolMap.put(byerId,ticketId);
+}
     public DBManager getDbm() {
         return dbm;
     }
 
     public void runBuyers() throws InterruptedException {
-            Collection<Callable<Boolean>> byerTasks = new ArrayList<Callable<Boolean>>();
-            for (int i = 0; i <50 ; i++) {
-                byerTasks.add(() -> {
-                   // Connection con = dbm.openConnection();
-                   // con.setAutoCommit(false);
-               //     con.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-                    for (int j = 0; j <20 ; j++) {
-                        buy( byerName + count.incrementAndGet());
-
-                    }
-                   // con.commit();
-                    return true;
-                });
-            }
-            System.out.println("byers size = " + byerTasks.size());
-            byerPool.invokeAll(byerTasks);
+        Collection<Callable<Boolean>> byerTasks = new ArrayList<Callable<Boolean>>();
+        for (int i = 0; i < 50; i++) {
+            byerTasks.add(() -> {
+                for (int j = 0; j < 200; j++) {
+                    buy(byerName + count.incrementAndGet());
+                }
+                return true;
+            });
+        }
+        System.out.println("byers size = " + byerTasks.size());
+        byerPool.invokeAll(byerTasks);
     }
-
+public void showTicketOwners(){
+    logger.info("cintrolMap size : " + getConrolMap().size());
+    getConrolMap().forEach((k, v) -> logger.info("byerId : " + k + " ;  ticketId  " + v));
+}
+    public ConcurrentHashMap<String, String> getConrolMap() {
+        return conrolMap;
+    }
 }
